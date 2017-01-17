@@ -3,13 +3,9 @@ import json
 import io
 import csv
 
-from bokeh.embed import components
-from bokeh.plotting import figure
-from bokeh.resources import INLINE
-from bokeh.util.string import encode_utf8
-
-import numpy as np
-from scipy.interpolate import UnivariateSpline
+#
+# import numpy as np
+# from scipy.interpolate import UnivariateSpline
 
 app = Flask(__name__)
 
@@ -74,7 +70,7 @@ def getitem(obj, item, default):
     else:
         return obj[item]
 
-@app.route('/embed', methods=["POST"])
+@app.route('/chart', methods=["POST"])
 def transform_view():
     f1 = request.files['datafile_one']
     f2 = request.files['datafile_two']
@@ -84,24 +80,19 @@ def transform_view():
     if not f2:
         return "No file 2"
 
-    opg1 = read_opg_file(f1)
-    # x_1, y_1 = read_file(f1)
-    # x_2, y_2 = read_file(f2)
+    # opg1 = read_opg_file(f1)
+    x_1, y_1 = read_file(f1)
+    x_2, y_2 = read_file(f2)
 
-    # These next lines probably don't work
-    fig = figure(title="Plot")
-    fig.line(opg1['x_cm'], opg1['pixel_data'], line_width=2)
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    script, div = components(fig)
-    html = render_template(
-        'embed.html',
-        plot_script=script,
-        plot_div=div,
-        js_resources=js_resources,
-        css_resources=css_resources
-    )
-    return encode_utf8(html)
+    chart_input = []
+    for i in range(len(x_1)):
+        chart_input.append([x_1[i],y_1[i],"null"])
+
+    for i in range(len(x_2)):
+        chart_input.append([x_2[i],"null",y_2[i]])
+
+    print(chart_input)
+    return render_template('chart.html', chart_input = chart_input)
 
 
 if __name__ == "__main__":

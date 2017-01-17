@@ -1,0 +1,55 @@
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type="text/javascript">
+    google.charts.load('current', {
+        packages: ['corechart', 'line']
+    });
+    google.charts.setOnLoadCallback(drawCurveTypes);
+
+    function drawCurveTypes() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'X');
+        data.addColumn('number', 'set1');
+        data.addColumn('number', 'set2');
+
+        data.addRows([
+          {% for row in chart_input %}
+          [{{row[0]}},{{row[1]}},{{row[2]}}],
+          {% endfor %}
+        ]);
+
+        var options = {
+            hAxis: {
+                title: 'x'
+            },
+            vAxis: {
+                title: 'y'
+            },
+            series: {
+                1: {
+                    curveType: 'function'
+                }
+            }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+    }
+</script>
+<style>
+    #content {
+        width: 80%;
+        height: 60%;
+        min-width: 800px;
+        /* Center the div. */
+        margin-right: auto;
+        margin-left: auto;
+        color: #A0D100;
+        text-align: center;
+    }
+    #chart_div {
+        min-height: 400px;
+    }
+</style>
+<a href="/">Back</a>
+<div id="chart_div"></div>
