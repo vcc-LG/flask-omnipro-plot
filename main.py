@@ -2,45 +2,15 @@ from flask import Flask, make_response, request, render_template, jsonify
 import json
 import io
 import csv
-
+from bs4 import BeautifulSoup
+import pprint
 #
 # import numpy as np
 # from scipy.interpolate import UnivariateSpline
 
 app = Flask(__name__)
 
-class OpgData(object):
-    """
-    Class to hold data from .opg file
-    """
-
-    def __init__(self, opg_reader):
-        self.opg_reader = opg_reader
-        self.x_cm, self.y_cm, self.pixel_data = self.parse_data()
-
-    def parse_data(self):
-        """
-        Read in data from .opg file
-        """
-        # with open(self.opg_reader, "r") as ins:
-        raw_data = []
-        for row in self.opg_reader:
-            raw_data.append(row)
-
-        all_data = []
-        while True:
-            for line in raw_data:
-                if r'<asciibody>' in line:
-                    break
-            for line in raw_data:
-                if '</asciibody>' in line:
-                    break
-                all_data.append(line)
-
-        x_cm = [float(x) for x in all_data[2].split('\t')[1:-1]]
-        y_cm = [float(x.split('\t')[0]) for x in all_data[4:-1]]
-        pixel_data = [[float(x) for x in y.split('\t')[1:-1]] for y in all_data[4:]]
-        return x_cm, y_cm, pixel_data
+pp = pprint.PrettyPrinter(indent=4)
 
 @app.route('/')
 def form():
@@ -60,8 +30,19 @@ def read_file(file_in):
 
 def read_opg_file(opg_file_in):
     stream = io.StringIO(opg_file_in.stream.read().decode("UTF8"), newline=None)
-    reader = csv.reader(stream, delimiter=',')
-    return OpgData(reader)
+    soup = BeautifulSoup(stream)
+    raw_data = soup.find('asciibody').getText()
+    raw_data = raw_data.split('\n')
+    x_cm = [float(x) for x in raw_data[3].split('\t')[1:-1]]
+    y_cm = [float(x.split('\t')[0]) for x in raw_data[5:-1]]
+    pixel_data = [[float(x) for x in y.split('\t')[1:-1]] for y in raw_data[5:]]
+    # pp.pprint(x_cm)
+
+
+    # reader = csv.reader(stream, delimiter=',')
+    # class_to_return = OpgData(reader)
+    # console.log(class_to_return.x_cm)
+    return x_cm, y_cm, pixel_data
 
 
 def getitem(obj, item, default):
@@ -77,21 +58,45 @@ def transform_view():
 
     if not f1:
         return "No file 1"
-    if not f2:
-        return "No file 2"
+    # if not f2:
+    #     return "No file 2"
 
-    # opg1 = read_opg_file(f1)
-    x_1, y_1 = read_file(f1)
-    x_2, y_2 = read_file(f2)
+    x_vals_1, y_vals_1, pixel_data_1 = read_opg_file(f1)
+
+
+    # stream = io.StringIO(f1.stream.read().decode("UTF8"), newline=None)
+    # reader = csv.reader(stream)
+    # raw_data = []
+    # for row in reader:
+    #     raw_data.append(row)
+    # all_data = []
+    # while True:
+    #     for line in raw_data:
+    #         if r'<asciibody>' in line:
+    #             break
+    #     for line in raw_data:
+    #         if '</asciibody>' in line:
+    #             break
+    #         all_data.append(line)
+    # x_cm = [float(x) for x in all_data[2].split('\t')[1:-1]]
+    # y_cm = [float(x.split('\t')[0]) for x in all_data[4:-1]]
+    # pixel_data = [[float(x) for x in y.split('\t')[1:-1]] for y in all_data[4:]]
+    # for x in x_cm:
+    #     print(x)
+    # x_1, y_1 = read_file(f1)
+    # x_2, y_2 = read_file(f2)
+
+    x_1 = x_vals_1
+    y_1 = pixel_data_1[round(len(pixel_data_1) / 2)]
 
     chart_input = []
     for i in range(len(x_1)):
         chart_input.append([x_1[i],y_1[i],"null"])
 
-    for i in range(len(x_2)):
-        chart_input.append([x_2[i],"null",y_2[i]])
+    pp.pprint(chart_input)
+    # for i in range(len(x_2)):
+    #     chart_input.append([x_2[i],"null",y_2[i]])
 
-    print(chart_input)
     return render_template('chart.html', chart_input = chart_input)
 
 
