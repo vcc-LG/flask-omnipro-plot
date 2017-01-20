@@ -9,12 +9,20 @@
     function drawCurveTypes() {
         var data = new google.visualization.DataTable();
         data.addColumn('number', 'X');
-        data.addColumn('number', 'set1');
-        data.addColumn('number', 'set2');
+
+        {% for filename in file_names %}
+          data.addColumn('number', "{{ filename }}");
+        {% endfor %}
+        // data.addColumn('number', 'set2');
 
         data.addRows([
           {% for row in chart_input %}
-          [{{row[0]}},{{row[1]}},{{row[2]}}],
+          [
+            {% for col in row %}
+            {{col}},
+            // [{{row[0]}},{{row[1]}},{{row[2]}}],
+          {% endfor %}
+        ],
           {% endfor %}
         ]);
 
@@ -29,6 +37,10 @@
                 1: {
                     curveType: 'function'
                 }
+            },
+            legend: 'bottom',
+            explorer: {
+              actions: ['dragToZoom', 'rightClickToReset']
             }
         };
 
@@ -37,19 +49,10 @@
     }
 </script>
 <style>
-    #content {
-        width: 80%;
-        height: 60%;
-        min-width: 800px;
-        /* Center the div. */
-        margin-right: auto;
-        margin-left: auto;
-        color: #A0D100;
-        text-align: center;
-    }
-    #chart_div {
-        min-height: 400px;
-    }
+
 </style>
 <a href="/">Back</a>
-<div id="chart_div"></div>
+<p>
+  Left click to zoom, right click to reset
+</p>
+<div id="chart_div" style="width: 100%; height: 70%;"></div>
