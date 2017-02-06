@@ -25,5 +25,8 @@ Choose one or two .opg files and click Submit. Hover over points on the graphs f
 Built with
 ------------
 [Flask](http://flask.pocoo.org/)
+
 [Jinja2](http://jinja.pocoo.org/docs/2.9/)
+
 [Google Charts](https://developers.google.com/chart/)
+
